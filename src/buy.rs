@@ -16,7 +16,7 @@ pub async fn buy() -> Redirect {
 
     let host = env::var("HOST").expect("HOST environment variable is not set");
 
-    let success_url = format!("{}/?token={}", host, uuid.as_hyphenated());
+    let success_url = format!("{}/set?token={}", host, uuid.as_hyphenated());
 
     let params = [
         ("mode", "payment"),
