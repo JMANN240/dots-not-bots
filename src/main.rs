@@ -6,6 +6,7 @@ use axum::{
 };
 use axum_extra::extract::CookieJar;
 use buy::buy;
+use clap::Parser;
 use dotenvy::dotenv;
 use maud::{DOCTYPE, Markup, html};
 use register::register;
@@ -25,6 +26,11 @@ mod set_token;
 mod socketio;
 mod stripe_signature;
 
+#[derive(Parser)]
+struct Cli {
+    port: u16,
+}
+
 #[derive(Clone)]
 struct AppState {
     pool: SqlitePool,
@@ -33,6 +39,7 @@ struct AppState {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    let cli = Cli::parse();
     dotenv()?;
 
     let pool = SqlitePool::connect(
@@ -64,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting server");
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", cli.port)).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
