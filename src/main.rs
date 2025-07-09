@@ -114,7 +114,7 @@ async fn root(State(state): State<AppState>, jar: CookieJar) -> Markup {
                     p {
                         "Come watch, or "
                         a href="/buy" {
-                            "join in"
+                            "join us"
                         }
                         " for $1.00."
                     }

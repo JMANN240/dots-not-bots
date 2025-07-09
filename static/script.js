@@ -35,7 +35,7 @@ const draw_peers = (context, peers) => {
 
 		if (peer.position) {
 			context.beginPath();
-			context.arc(peer.position.x, peer.position.y, 1, 0, Math.PI * 2);
+			context.arc(peer.position.x, peer.position.y, 3, 0, Math.PI * 2);
 			context.fillStyle = peer.color;
 			context.fill();
 		}
