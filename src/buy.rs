@@ -25,7 +25,11 @@ pub async fn buy() -> Redirect {
             "payment_intent_data[description]",
             &format!("Your Human Token: {}", uuid),
         ),
-        ("line_items[0][price]", "price_1Rif5jQp7dKl3BqgWoxCF7Oe"),
+        (
+            "line_items[0][price]",
+            &env::var("MEMBERSHIP_PRICE_ID")
+                .expect("MEMBERSHIP_PRICE_ID environment variable is not set"),
+        ),
         ("line_items[0][quantity]", "1"),
         ("metadata[human_token]", &uuid.as_hyphenated().to_string()),
     ];
