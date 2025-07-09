@@ -98,6 +98,7 @@ async fn root(State(state): State<AppState>, jar: CookieJar) -> Markup {
         (DOCTYPE)
         html {
             head {
+                (get_meta_tags())
                 link rel="stylesheet" href="/styles.css";
             }
             body .roboto-100 {
@@ -129,5 +130,28 @@ async fn root(State(state): State<AppState>, jar: CookieJar) -> Markup {
                 script src="/script.js" {}
             }
         }
+    }
+}
+
+pub fn get_meta_tags() -> Markup {
+
+
+    let title = "DotsNotBots Club";
+    let description = "Come be human.";
+
+    html! {
+        title { (title) }
+        meta name="description" content=(description);
+
+        meta property="og:url" content="https://dotsnotbots.club/";
+        meta property="og:type" content="website";
+        meta property="og:title" content=(title);
+        meta property="og:description" content=(description);
+
+        meta name="twitter:card" content="summary_large_image";
+        meta property="twitter:domain" content="dotsnotbots.club";
+        meta property="twitter:url" content="https://dotsnotbots.club/";
+        meta name="twitter:title" content=(title);
+        meta name="twitter:description" content=(description);
     }
 }
