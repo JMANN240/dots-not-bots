@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use socketioxide::{
     SocketIo,
     extract::{SocketRef, State},
@@ -7,12 +5,12 @@ use socketioxide::{
 };
 use tracing::info;
 
-use super::SocketIoState;
+use crate::AppState;
 
 pub async fn on_disconnect(
     io: SocketIo,
     socket: SocketRef,
-    State(state): State<Arc<SocketIoState>>,
+    State(state): State<AppState>,
     reason: DisconnectReason,
 ) {
     info!("Socket {} disconnected: {}", socket.id, reason);

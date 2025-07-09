@@ -8,11 +8,13 @@ use axum_extra::extract::CookieJar;
 use buy::buy;
 use clap::Parser;
 use dotenvy::dotenv;
+use image::image;
 use maud::{DOCTYPE, Markup, html};
 use register::register;
+use serde::{Deserialize, Serialize};
 use set_token::set_token;
-use socketio::{SocketIoState, on_connect};
-use socketioxide::SocketIo;
+use socketio::on_connect;
+use socketioxide::{socket::Sid, SocketIo};
 use sqlx::SqlitePool;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
@@ -21,6 +23,7 @@ use tracing_subscriber::FmtSubscriber;
 use uuid::Uuid;
 
 mod buy;
+mod image;
 mod register;
 mod set_token;
 mod socketio;
@@ -31,9 +34,24 @@ struct Cli {
     port: u16,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct Position {
+    pub x: f64,
+    pub y: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct HumanData {
+    pub id: Sid,
+    pub position: Option<Position>,
+    pub color: String,
+}
+
 #[derive(Clone)]
 struct AppState {
-    pool: SqlitePool,
+    pub socket_token: Arc<RwLock<HashMap<Sid, Uuid>>>,
+    pub token_data: Arc<RwLock<HashMap<Uuid, HumanData>>>,
+    pub pool: SqlitePool,
 }
 
 #[tokio::main]
@@ -48,25 +66,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .await
     .unwrap();
 
+    let state = AppState {
+        socket_token: Arc::new(RwLock::new(HashMap::new())),
+        token_data: Arc::new(RwLock::new(HashMap::new())),
+        pool,
+    };
+
     let (layer, io) = SocketIo::builder()
-        .with_state(Arc::new(SocketIoState {
-            socket_token: RwLock::new(HashMap::new()),
-            token_data: RwLock::new(HashMap::new()),
-            pool: pool.clone(),
-        }))
+        .with_state(state.clone())
         .build_layer();
 
     io.ns("/", on_connect);
-
-    let app_state = AppState { pool };
 
     let app = axum::Router::new()
         .route("/", get(root))
         .route("/buy", get(buy))
         .route("/set", get(set_token))
+        .route("/image", get(image))
         .route("/register", post(register))
         .fallback_service(ServeDir::new("static"))
-        .with_state(app_state)
+        .with_state(state)
         .layer(layer);
 
     info!("Starting server");

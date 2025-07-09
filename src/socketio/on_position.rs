@@ -1,18 +1,16 @@
-use std::sync::Arc;
-
 use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State},
 };
 use tracing::info;
 
-use super::{Position, SocketIoState};
+use crate::{AppState, Position};
 
 pub async fn on_position(
     io: SocketIo,
     socket: SocketRef,
     Data(position): Data<Position>,
-    State(state): State<Arc<SocketIoState>>,
+    State(state): State<AppState>,
 ) {
     info!("Socket {} position {:?}", socket.id, position);
 

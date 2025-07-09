@@ -1,14 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
-
 use palette::{FromColor, Hsv, Srgb};
 use serde::{Deserialize, Serialize};
 use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State},
-    socket::Sid,
 };
-use sqlx::SqlitePool;
-use tokio::sync::RwLock;
 use tracing::info;
 
 mod on_disconnect;
@@ -18,26 +13,7 @@ pub use on_disconnect::*;
 pub use on_position::*;
 use uuid::Uuid;
 
-use crate::token_exists;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Position {
-    pub x: f64,
-    pub y: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HumanData {
-    pub id: Sid,
-    pub position: Option<Position>,
-    pub color: String,
-}
-
-pub struct SocketIoState {
-    pub socket_token: RwLock<HashMap<Sid, Uuid>>,
-    pub token_data: RwLock<HashMap<Uuid, HumanData>>,
-    pub pool: SqlitePool,
-}
+use crate::{token_exists, AppState, HumanData};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SocketIoAuth {
@@ -48,7 +24,7 @@ pub async fn on_connect(
     io: SocketIo,
     socket: SocketRef,
     Data(auth): Data<SocketIoAuth>,
-    State(state): State<Arc<SocketIoState>>,
+    State(state): State<AppState>,
 ) {
     info!("Socket {} connected with auth {:?}", socket.id, auth);
 
