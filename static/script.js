@@ -25,6 +25,21 @@ const socket = io({
 	},
 });
 
+const draw_peers = (context, peers) => {
+	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+	for (const id in peers) {
+		const peer = peers[id];
+
+		if (peer.position) {
+			context.beginPath();
+			context.arc(peer.position.x, peer.position.y, 1, 0, Math.PI * 2);
+			context.fillStyle = peer.color;
+			context.fill();
+		}
+	}
+};
+
 socket.on('data', (data) => {
 	console.log("<- data", data);
 	peers[data.id] = data;
@@ -47,18 +62,3 @@ if (token) {
 		socket.emit('position', position)
 	});
 }
-
-const draw_peers = (context, peers) => {
-	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-	for (const id in peers) {
-		const peer = peers[id];
-
-		if (peer.position) {
-			context.beginPath();
-			context.arc(peer.position.x, peer.position.y, 1, 0, Math.PI * 2);
-			context.fillStyle = peer.color;
-			context.fill();
-		}
-	}
-};
