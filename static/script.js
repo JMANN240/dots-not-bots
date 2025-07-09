@@ -17,11 +17,13 @@ function getCookie(cname) {
 	return "";
 }
 
+const token = getCookie('token')
+
 const peers = {};
 
 const socket = io({
 	auth: {
-		token: getCookie('token')
+		token,
 	},
 });
 
