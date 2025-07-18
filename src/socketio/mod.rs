@@ -68,7 +68,10 @@ pub async fn on_connect(
             state.socket_token.write().await.insert(socket.id, token);
             state.token_data.write().await.insert(token, new_data.clone());
     
-            info!("There are {} sockets", io.sockets().len());
+            info!("There are {} sockets:", io.sockets().len());
+            for socket in io.sockets() {
+                println!("{} - connected? {}", socket.id, socket.connected());
+            }
 
             io.broadcast().emit("data", &new_data).await.unwrap();
     
