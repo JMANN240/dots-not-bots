@@ -4,7 +4,7 @@ use socketioxide::{
     SocketIo,
     extract::{Data, SocketRef, State},
 };
-use tracing::info;
+use tracing::{info, warn};
 
 use super::{Position, SocketIoState};
 
@@ -20,6 +20,11 @@ pub async fn on_position(
         let mut socket_data = state.token_data.write().await;
         let data = socket_data.get_mut(token).unwrap();
         data.position = Some(position);
-        io.broadcast().emit("data", &data).await.unwrap();
+        for socket in io.sockets() {
+            if let Err(error) = socket.emit("data", &data) {
+                warn!("Failed to emit to socket {}, dropping: {}", socket.id, error);
+                socket.disconnect().unwrap();
+            }
+        }
     }
 }
