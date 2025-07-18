@@ -9,7 +9,7 @@ use socketioxide::{
 };
 use sqlx::SqlitePool;
 use tokio::sync::RwLock;
-use tracing::{info, warn};
+use tracing::info;
 
 mod on_disconnect;
 mod on_position;
@@ -55,33 +55,28 @@ pub async fn on_connect(
     if let Some(token) = auth.token {
         if token_exists(&state.pool, &token).await.unwrap() {
             info!("Socket {} authenticated", socket.id);
-
+    
             let color = Srgb::from_color(Hsv::new(rand::random_range(0.0..360.0), 0.5, 1.0))
                 .into_format::<u8>();
-
+    
             let new_data = HumanData {
                 id: socket.id,
                 position: None,
                 color: format!("#{:02X}{:02X}{:02X}", color.red, color.green, color.blue),
             };
-
+    
             state.socket_token.write().await.insert(socket.id, token);
-            state
-                .token_data
-                .write()
-                .await
-                .insert(token, new_data.clone());
-
+            state.token_data.write().await.insert(token, new_data.clone());
+    
             info!("There are {} sockets:", io.sockets().len());
             for socket in io.sockets() {
-                if let Err(error) = socket.emit("data", &new_data) {
-                    warn!("Failed to emit to socket {}, dropping: {}", socket.id, error);
-                    socket.disconnect().unwrap();
-                }
+                println!("{} - connected? {}", socket.id, socket.connected());
             }
 
+            io.broadcast().emit("data", &new_data).await.unwrap();
+    
             socket.on("position", on_position);
-
+    
             socket.on_disconnect(on_disconnect);
         }
     }
