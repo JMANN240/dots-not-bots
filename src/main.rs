@@ -71,7 +71,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting server");
 
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", cli.port)).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", cli.port))
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
@@ -141,8 +143,6 @@ async fn root(State(state): State<AppState>, jar: CookieJar) -> Markup {
 }
 
 pub fn get_meta_tags() -> Markup {
-
-
     let title = "DotsNotBots Club";
     let description = "Come be human.";
 

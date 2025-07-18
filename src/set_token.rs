@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use axum::{extract::Query, response::Redirect};
-use axum_extra::extract::{cookie::Cookie, CookieJar};
+use axum_extra::extract::{CookieJar, cookie::Cookie};
 
 pub async fn set_token(Query(query): Query<HashMap<String, String>>) -> (CookieJar, Redirect) {
     let mut jar = CookieJar::new();

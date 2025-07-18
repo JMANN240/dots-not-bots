@@ -23,7 +23,7 @@ pub async fn buy() -> Redirect {
         ("success_url", &success_url),
         (
             "payment_intent_data[description]",
-            &format!("Your Human Token: {}", uuid),
+            &format!("Your Human Token: {uuid}"),
         ),
         (
             "line_items[0][price]",
