@@ -49,6 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap();
 
     let (layer, io) = SocketIo::builder()
+        .max_buffer_size(10000)
         .with_state(Arc::new(SocketIoState {
             socket_token: RwLock::new(HashMap::new()),
             token_data: RwLock::new(HashMap::new()),

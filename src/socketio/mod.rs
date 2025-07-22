@@ -9,7 +9,7 @@ use socketioxide::{
 };
 use sqlx::SqlitePool;
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{info, instrument};
 
 mod on_disconnect;
 mod on_position;
@@ -33,6 +33,7 @@ pub struct HumanData {
     pub color: String,
 }
 
+#[derive(Debug)]
 pub struct SocketIoState {
     pub socket_token: RwLock<HashMap<Sid, Uuid>>,
     pub token_data: RwLock<HashMap<Uuid, HumanData>>,
@@ -44,44 +45,57 @@ pub struct SocketIoAuth {
     pub token: Option<Uuid>,
 }
 
+#[instrument]
 pub async fn on_connect(
     io: SocketIo,
     socket: SocketRef,
     Data(auth): Data<SocketIoAuth>,
     State(state): State<Arc<SocketIoState>>,
 ) {
-    info!("Socket {} connected with auth {:?}", socket.id, auth);
+    info!(?auth, "Connected");
 
     if let Some(token) = auth.token {
         if token_exists(&state.pool, &token).await.unwrap() {
-            info!("Socket {} authenticated", socket.id);
-    
+            info!("Authenticated");
+
             let color = Srgb::from_color(Hsv::new(rand::random_range(0.0..360.0), 0.5, 1.0))
                 .into_format::<u8>();
-    
+
+            info!(?color, "Color chosen");
+
             let new_data = HumanData {
                 id: socket.id,
                 position: None,
                 color: format!("#{:02X}{:02X}{:02X}", color.red, color.green, color.blue),
             };
-    
+
+            info!(?new_data, "Data constructed");
+
             state.socket_token.write().await.insert(socket.id, token);
-            state.token_data.write().await.insert(token, new_data.clone());
-    
-            info!("There are {} sockets:", io.sockets().len());
-            for socket in io.sockets() {
-                println!("{} - connected? {}", socket.id, socket.connected());
-            }
+            info!(?state.socket_token, "Socket-token relationship written");
+
+            state
+                .token_data
+                .write()
+                .await
+                .insert(token, new_data.clone());
+            info!(?state.token_data, "Token-data relationship written");
 
             io.broadcast().emit("data", &new_data).await.unwrap();
-    
+            info!("New data broadcasted");
+
             socket.on("position", on_position);
-    
+            info!("Position handler added");
+
             socket.on_disconnect(on_disconnect);
+            info!("Disconnect handler added");
         }
     }
 
+    info!("Emitting existing data");
     for data in state.token_data.read().await.values() {
         socket.emit("data", data).unwrap();
+        info!(?data, "Data emitted");
     }
+    info!("All existing data emitted");
 }
