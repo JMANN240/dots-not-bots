@@ -7,6 +7,7 @@ use axum::{
 use axum_extra::extract::CookieJar;
 use buy::buy;
 use clap::Parser;
+use clear_token::clear_token;
 use dotenvy::dotenv;
 use maud::{DOCTYPE, Markup, html};
 use register::register;
@@ -21,6 +22,7 @@ use tracing_subscriber::FmtSubscriber;
 use uuid::Uuid;
 
 mod buy;
+mod clear_token;
 mod register;
 mod set_token;
 mod socketio;
@@ -65,6 +67,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/", get(root))
         .route("/buy", get(buy))
         .route("/set", get(set_token))
+        .route("/clear", get(clear_token))
         .route("/register", post(register))
         .fallback_service(ServeDir::new("static"))
         .with_state(app_state)
@@ -128,11 +131,19 @@ async fn root(State(state): State<AppState>, jar: CookieJar) -> Markup {
                 p { "Every dot is a human with us now." }
                 p { "When you leave, so does your dot." }
 
-                @if let Some(token_string) = maybe_token_string {
-                    span id="token-span" {
-                        "Token: "
+                span id="token-span" {
+                    "Token: "
                         span {
+                        @if let Some(token_string) = maybe_token_string {
                             (token_string)
+                            form action="/clear" {
+                                button class="roboto-100" type="submit" { "Clear" }
+                            }
+                        } @else {
+                            form action="/set" {
+                                input class="roboto-100" name="token" type="text" maxlength="36";
+                                button class="roboto-100" type="submit" { "Set" }
+                            }
                         }
                     }
                 }

@@ -46,13 +46,41 @@ canvas {
 	padding: 1rem;
 	font-size: 1rem;
 	color: #808080;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
 }
 
 #token-span > span {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
 	filter: blur(4px);
 	transition: filter 0.2s;
 }
 
 #token-span > span:hover {
 	filter: none;
+}
+
+#token-span form {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}
+
+#token-span input {
+	color: #808080;
+	background-color: transparent;
+	border: 1px solid #808080;
+	border-radius: 4px;
+	font-size: 1rem;
+}
+
+#token-span button {
+	color: #808080;
+	background-color: transparent;
+	border: 1px solid #808080;
+	border-radius: 4px;
+	font-size: 1rem;
 }
