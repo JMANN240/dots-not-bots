@@ -25,6 +25,9 @@ const socket = io({
 	auth: {
 		token,
 	},
+	transports: [
+		'websocket'
+	],
 });
 
 const draw_peers = (context, peers) => {

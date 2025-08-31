@@ -13,7 +13,7 @@ use maud::{DOCTYPE, Markup, html};
 use register::register;
 use set_token::set_token;
 use socketio::{SocketIoState, on_connect};
-use socketioxide::SocketIo;
+use socketioxide::{SocketIo, TransportType};
 use sqlx::SqlitePool;
 use tokio::sync::RwLock;
 use tower_http::services::ServeDir;
@@ -51,7 +51,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap();
 
     let (layer, io) = SocketIo::builder()
-        .max_buffer_size(10000)
+        .max_buffer_size(8)
+        .transports([TransportType::Websocket])
         .with_state(Arc::new(SocketIoState {
             socket_token: RwLock::new(HashMap::new()),
             token_data: RwLock::new(HashMap::new()),
